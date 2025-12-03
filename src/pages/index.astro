@@ -1,16 +1,30 @@
 ---
-
+// src/pages/index.astro
 ---
 
-<html lang="en">
+<html lang="zh-CN">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Artifacts</title>
 	</head>
-	<body>
-		<h1>Astro</h1>
+	<body class="bg-black text-green-500 font-mono min-h-screen p-8 selection:bg-green-500 selection:text-black">
+		<main class="max-w-2xl mx-auto mt-20">
+            <h1 class="text-4xl font-bold mb-4 animate-pulse">
+                Artifacts_
+            </h1>
+            
+            <div class="border border-green-900 p-6 bg-green-900/10">
+                <p class="mb-4 text-lg">
+                    > System Status: <span class="text-red-500">Compiling Entropy...</span>
+                </p>
+                <p class="opacity-70">
+                    // Visual glitches, mental static, and digital relics.
+                </p>
+            </div>
+
+            </main>
 	</body>
 </html>
