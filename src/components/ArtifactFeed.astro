@@ -1,0 +1,188 @@
+---
+import { render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  initialArtifacts: CollectionEntry<'artifacts'>[];
+}
+
+const { initialArtifacts } = Astro.props;
+
+// 预渲染所有内容
+const processedArtifacts = await Promise.all(
+  initialArtifacts.map(async (artifact) => {
+    const { Content } = await render(artifact);
+    return {
+      ...artifact,
+      Content,
+    };
+  })
+);
+
+// 提取元数据用于客户端逻辑（减小数据传输量）
+const artifactsMetadata = processedArtifacts.map(p => ({
+  data: { format: p.data.format, category: p.data.category }
+}));
+---
+
+<div 
+  class="space-y-8" 
+  x-data={`filterLogic(${JSON.stringify(artifactsMetadata)})`}
+>
+  {/* Matrix Filter */}
+  <div class="bg-gray-900/30 border border-gray-800 p-4 rounded-sm">
+    <div class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-widest flex items-center gap-2">
+      <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+      信号过滤器
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Formats */}
+      <div>
+        <div class="text-xs text-gray-600 mb-2">// FORMATS</div>
+        <div class="flex gap-2">
+          {['article', 'status'].map(format => (
+            <button
+              @click={`toggle('formats', '${format}')`}
+              :class={`formats.includes('${format}') 
+                ? 'bg-gray-800 border-gray-500 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]' 
+                : 'bg-transparent border-gray-800 text-gray-600 hover:border-gray-700'`}
+              class="px-3 py-1 text-sm border transition-all duration-200 font-mono uppercase"
+            >
+              <span x-text={`formats.includes('${format}') ? '[x]' : '[ ]'`}></span> {format}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div>
+        <div class="text-xs text-gray-600 mb-2">// CHANNELS</div>
+        <div class="flex flex-wrap gap-2">
+          {['thinking', 'criticism', 'emotion'].map(category => {
+             const activeColorClass = 
+                  category === 'thinking' ? 'text-blue-400 border-blue-900 bg-blue-900/20' :
+                  category === 'criticism' ? 'text-red-400 border-red-900 bg-red-900/20' :
+                  'text-purple-400 border-purple-900 bg-purple-900/20';
+            return (
+              <button
+                @click={`toggle('categories', '${category}')`}
+                :class={`categories.includes('${category}') 
+                  ? '${activeColorClass}' 
+                  : 'bg-transparent border-gray-800 text-gray-600 hover:border-gray-700'`}
+                class="px-3 py-1 text-sm border transition-all duration-200 font-mono uppercase"
+              >
+                <span x-text={`categories.includes('${category}') ? '#' : '_'`}></span> {category}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Stats Line */}
+  <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+     <h2 class="text-xl font-bold text-gray-400 uppercase tracking-widest border-l-2 border-red-500 pl-4">
+       数据流
+     </h2>
+     <div class="text-xs text-gray-600 font-mono">
+       Showing: <span x-text="visibleCount"></span> / {initialArtifacts.length}
+     </div>
+  </div>
+
+  {/* Artifact Grid */}
+  <div class="grid gap-6">
+    {processedArtifacts.map((post) => (
+      <article 
+        x-show={`isVisible('${post.data.format}', '${post.data.category}')`}
+        class="border border-gray-800 p-6 hover:border-gray-600 transition-colors group relative overflow-hidden bg-black/50 backdrop-blur-sm animate-in fade-in duration-500"
+      >
+        <div class="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-40 text-xs font-bold border-l border-b border-gray-800">
+           [{post.data.format.toUpperCase()}]
+        </div>
+        <h3 class="text-2xl font-bold mb-3 text-gray-100">
+          {post.data.format === 'status' ? (
+            <div class="cursor-default" x-data="{ expanded: false, isLong: false }" x-init="$nextTick(() => { isLong = $refs.content.scrollHeight > $refs.content.clientHeight })">
+              {/* Status Content Rendered via Astro */}
+              <div class="mt-2 text-gray-300 font-mono text-sm leading-relaxed">
+                <div 
+                    x-ref="content"
+                    :class="expanded ? 'max-h-none' : 'max-h-[6em]'"
+                    class="pb-2 relative overflow-hidden transition-all duration-500"
+                >
+                  <div class="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-a:text-blue-400">
+                    <post.Content />
+                  </div>
+                  {/* Fade Overlay */}
+                  <div 
+                    x-show="!expanded && isLong" 
+                    class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-black/90 to-transparent pointer-events-none"
+                  ></div>
+                </div>
+                
+                <button 
+                    x-show="isLong"
+                    @click="expanded = !expanded"
+                    class="mt-2 text-xs text-gray-500 hover:text-white flex items-center gap-1"
+                >
+                  <span x-text="expanded ? '[-] COLLAPSE' : '[+] EXPAND'"></span>
+                </button>
+                
+                {/* Verdict Display */}
+                {post.data.aiVerdict && (
+                    <div class="mt-4 pt-3 border-t border-red-900/30">
+                       <div class="flex items-baseline justify-between text-xs mb-1">
+                         <span class="text-red-400 font-bold tracking-wider uppercase">[NEMESIS]</span>
+                         <span class="text-red-500/60">VERDICT_SCORE: {post.data.aiVerdict.score}</span>
+                       </div>
+                       <div class="text-xs text-red-300/70 italic border-l-2 border-red-500/20 pl-2">
+                         <span class="font-semibold not-italic text-red-400/80 mr-2">{post.data.aiVerdict.title}:</span>
+                         {post.data.aiVerdict.comment}
+                       </div>
+                    </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <a 
+              href={`/artifacts/${post.id}`} 
+              class="hover:text-white focus:outline-none focus:underline decoration-red-500 decoration-2 underline-offset-4"
+            >
+              {post.data.title || "Untitled Artifact"}
+            </a>
+          )}
+        </h3>
+        <div class="flex gap-4 text-xs text-gray-500 font-mono mb-0 uppercase tracking-wide">
+           <span>{new Date(post.data.date).toISOString().split('T')[0]}</span>
+           <span class={`
+              px-1 border border-transparent
+              ${post.data.category === 'thinking' ? "text-blue-400" : ""}
+              ${post.data.category === 'criticism' ? "text-red-400" : ""}
+              ${post.data.category === 'emotion' ? "text-purple-400" : ""}
+           `}>
+              #{post.data.category}
+           </span>
+        </div>
+      </article>
+    ))}
+    
+    <div x-show="visibleCount === 0" class="p-12 text-center border border-gray-800 border-dashed text-gray-600 font-mono" style="display: none;">
+      &gt; No signals found matching current filter parameters.
+    </div>
+  </div>
+</div>
+
+<script>
+  import filterLogic from '../scripts/filterLogic';
+  
+  declare global {
+    interface Window {
+      Alpine: any;
+    }
+  }
+
+  document.addEventListener('alpine:init', () => {
+    window.Alpine.data('filterLogic', filterLogic);
+  });
+</script>

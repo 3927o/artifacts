@@ -1,30 +1,21 @@
 ---
-// src/pages/index.astro
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import ArtifactFeed from '../components/ArtifactFeed.astro';
+
+const artifacts = await getCollection('artifacts');
+const sortedArtifacts = artifacts
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 
-<html lang="zh-CN">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Artifacts</title>
-	</head>
-	<body class="bg-black text-green-500 font-mono min-h-screen p-8 selection:bg-green-500 selection:text-black">
-		<main class="max-w-2xl mx-auto mt-20">
-            <h1 class="text-4xl font-bold mb-4 animate-pulse">
-                Artifacts_
-            </h1>
-            
-            <div class="border border-green-900 p-6 bg-green-900/10">
-                <p class="mb-4 text-lg">
-                    > System Status: <span class="text-red-500">Compiling Entropy...</span>
-                </p>
-                <p class="opacity-70">
-                    // Visual glitches, mental static, and digital relics.
-                </p>
-            </div>
+<Layout title="Artifacts_Terminal">
+  <header class="mb-12 border-b border-gray-800 pb-8">
+    <h1 class="text-4xl font-bold mb-4 tracking-tighter glitch-text">Artifacts_</h1>
+    <p class="text-gray-500 max-w-xl">
+      > 系统状态: <span class="text-green-500">在线</span><br/>
+      > 存储理性思考与混沌批判。
+    </p>
+  </header>
 
-            </main>
-	</body>
-</html>
+  <ArtifactFeed initialArtifacts={sortedArtifacts} />
+</Layout>

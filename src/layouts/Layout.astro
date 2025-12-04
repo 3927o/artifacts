@@ -1,0 +1,33 @@
+---
+import '../styles/global.css';
+
+import { CritiqueOverlay } from '../components/CritiqueOverlay';
+
+interface Props {
+	title?: string;
+}
+
+const { title = "Artifacts" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="A digital garden of rational thoughts and chaotic glitches." />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+	</head>
+	<body class="min-h-screen bg-black text-gray-200 font-mono selection:bg-red-900 selection:text-white">
+        <div class="bg-noise"></div>
+        <CritiqueOverlay client:idle />
+        <main class="container mx-auto px-4 py-8 max-w-4xl relative z-10">
+    		<slot />
+        </main>
+	</body>
+</html>
