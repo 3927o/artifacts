@@ -1,0 +1,38 @@
+name: Deploy to Caddy Server
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install and Build
+        run: |
+          npm ci
+          # 确保你的 package.json 里的 build 命令是 "next build"
+          # 且 next.config.js 里配置了 output: 'export'
+          npm run build
+
+      - name: Deploy via Rsync
+        run: |
+          # 1. 写入私钥
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # 2. 扫描服务器公钥防止询问
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+          # 3. Rsync 同步
+          # 将 out/ 目录下的内容同步到服务器的 /var/www/my-blog/
+          rsync -avz --delete ./out/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/www/my-blog/
