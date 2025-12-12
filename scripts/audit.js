@@ -9,6 +9,7 @@ import 'dotenv/config';
 const CONTENT_DIR = path.join(process.cwd(), 'src/content/artifacts');
 
 // 如果你在国内，可能需要配置 baseURL 指向你的中转代理
+console.log(process.env.AI_BASE_URL);
 const openai = new OpenAI({
   apiKey: process.env.AI_API_KEY, 
   baseURL: process.env.AI_BASE_URL || 'https://api.openai.com/v1', 

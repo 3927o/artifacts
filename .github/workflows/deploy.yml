@@ -21,6 +21,7 @@ jobs:
       - name: Install and Build
         env:
           AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_BASE_URL: ${{ secrets.AI_BASE_URL }}
         run: |
           npm ci
           # 确保你的 package.json 里的 build 命令是 "next build"
