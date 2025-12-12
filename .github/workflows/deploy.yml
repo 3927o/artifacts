@@ -37,4 +37,4 @@ jobs:
 
           # 3. Rsync 同步
           # 将 out/ 目录下的内容同步到服务器的 /var/www/my-blog/
-          rsync -avz --delete ./out/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/www/my-blog/
+          rsync -avz --delete ./dist/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/data/artifacts/
