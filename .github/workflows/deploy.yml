@@ -18,6 +18,8 @@ jobs:
           cache: 'npm'
 
       - name: Install and Build
+        env:
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
         run: |
           npm ci
           # 确保你的 package.json 里的 build 命令是 "next build"
